@@ -1,0 +1,9 @@
+{
+  "base_url": "https://meican.com",
+
+  "login_path": "/account/directlogin",
+  "calendar_path": "/preorder/api/v2.1/calendarItems/list",
+  "restaurant_path": "/preorder/api/v2.1/restaurants/list",
+  "dish_path": "/preorder/api/v2.1/restaurants/show",
+  "order_path": "/preorder/api/v2.1/orders/add"
+}
