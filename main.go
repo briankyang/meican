@@ -1,25 +1,26 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"meican/config"
 	"meican/service"
 	"meican/util"
 )
 
-
-func main()  {
+func main() {
 
 	var users []service.User
 
-	util.ReadFromJsonFile(config.UserConfigPath , &users)
+	userConfigPath := flag.String("config", config.UserConfigPath, "user configuration path, ex: /Users/root/user.json")
 
-	for _, u := range users{
-		log.Println("1231231")
+	util.ReadFromJsonFile(*userConfigPath, &users)
+
+	for _, u := range users {
 		go u.Order()
 	}
 
 	for _ = range users {
-		log.Println("complete with message: ", <- service.Complete)
+		log.Println("complete with message: ", <-service.Complete)
 	}
 }

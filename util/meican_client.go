@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"meican/config"
 	errors2 "meican/errors"
 	"meican/model"
 	"net/http"
@@ -18,18 +17,18 @@ import (
 )
 
 const (
-	format = "2006-01-02"
+	format        = "2006-01-02"
 	format_normal = "2006-01-02 15:04:05"
 )
 
 type MeiCanConfig struct {
 	BaseUrl string `json:"base_url"`
 
-	LoginPath string `json:"login_path"`
-	CalendarPath string `json:"calendar_path"`
+	LoginPath      string `json:"login_path"`
+	CalendarPath   string `json:"calendar_path"`
 	RestaurantPath string `json:"restaurant_path"`
-	DishPath string `json:"dish_path"`
-	OrderPath string `json:"order_path"`
+	DishPath       string `json:"dish_path"`
+	OrderPath      string `json:"order_path"`
 }
 
 type MeiCanClient struct {
@@ -38,7 +37,7 @@ type MeiCanClient struct {
 	httpClient *http.Client
 }
 
-func (p *MeiCanClient)assure() {
+func (p *MeiCanClient) assure() {
 	if p.config == nil {
 		p.config = &defaultConfig
 	}
@@ -62,7 +61,7 @@ func (p *MeiCanClient)assure() {
 	}
 }
 
-func (p *MeiCanClient) post(url string, contentType string, content string) (string, error)  {
+func (p *MeiCanClient) post(url string, contentType string, content string) (string, error) {
 	p.assure()
 
 	content = strings.Replace(content, "+", "%20", -1)
@@ -72,7 +71,7 @@ func (p *MeiCanClient) post(url string, contentType string, content string) (str
 	return p.request("post", url, contentType, content)
 }
 
-func (p *MeiCanClient) get(url string) (string, error)  {
+func (p *MeiCanClient) get(url string) (string, error) {
 	p.assure()
 
 	return p.request(http.MethodGet, url, "", "")
@@ -136,7 +135,7 @@ func (p *MeiCanClient) Login(username string, password string) error {
 
 	if e == nil {
 		log.Println("登陆成功")
-	}else {
+	} else {
 
 		return e
 	}
@@ -168,7 +167,7 @@ func (p *MeiCanClient) ListTab() ([]model.Tab, error) {
 	dateList, _ := m["dateList"].([]interface{})
 	var tabs []model.Tab
 
-	for _, v := range dateList  {
+	for _, v := range dateList {
 		t := model.NewTab(v)
 
 		if t != nil && t.Status == model.Available {
@@ -241,26 +240,35 @@ func (p *MeiCanClient) ListDishes(t *model.Tab, r *model.Restaurant) ([]model.Di
 	return dishes, nil
 }
 
-func (p *MeiCanClient) Order(t *model.Tab, d *model.Dish) (string, error)  {
+func (p *MeiCanClient) Order(t *model.Tab, d *model.Dish) (string, error) {
 
 	order := "[{\"dishId\":" + strconv.Itoa(d.Id) + ",\"count\":1" + "}]"
 	remark := "[{\"dishId\":\"" + strconv.Itoa(d.Id) + "\",\"remark\":\"\"}]"
 
 	content := url.Values{"tabUniqueId": {t.Uid},
-	"order": {order},
-	"targetTime" : {string(time.Unix(int64(t.TargetTime.(float64)/1000), 0).Format(format_normal))},
-	"userAddressUniqueId": {t.Address[0].Uuid},
-	"corpAddressUniqueId": {t.Address[0].Uuid},
-	"corpAddressRemark": {""},
-	"remarks": {remark},
+		"order":               {order},
+		"targetTime":          {string(time.Unix(int64(t.TargetTime.(float64)/1000), 0).Format(format_normal))},
+		"userAddressUniqueId": {t.Address[0].Uuid},
+		"corpAddressUniqueId": {t.Address[0].Uuid},
+		"corpAddressRemark":   {""},
+		"remarks":             {remark},
 	}
 
-	return p.post(p.config.BaseUrl + p.config.OrderPath, "application/x-www-form-urlencoded", content.Encode())
+	return p.post(p.config.BaseUrl+p.config.OrderPath, "application/x-www-form-urlencoded", content.Encode())
 }
 
 var defaultConfig MeiCanConfig
 
 func init() {
+	defaultConfig = MeiCanConfig{
+		BaseUrl: "https://meican.com",
+
+		LoginPath:      "/account/directlogin",
+		CalendarPath:   "/preorder/api/v2.1/calendarItems/list",
+		RestaurantPath: "/preorder/api/v2.1/restaurants/list",
+		DishPath:       "/preorder/api/v2.1/restaurants/show",
+		OrderPath:      "/preorder/api/v2.1/orders/add",
+	}
 	//log.Println("init meican")
-	ReadFromJsonFile(config.UrlConfigPath, &defaultConfig)
+	//ReadFromJsonFile(config.UrlConfigPath, &defaultConfig)
 }
