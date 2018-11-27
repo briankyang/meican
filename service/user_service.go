@@ -14,10 +14,10 @@ import (
 var Complete chan interface{} = make(chan interface{})
 
 type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username  string   `json:"username"`
+	Password  string   `json:"password"`
 	Exclusive []string `json:"exclusive"`
-	Favorite []string `json:"favorite"`
+	Favorite  []string `json:"favorite"`
 
 	client util.MeiCanClient
 }
@@ -29,10 +29,12 @@ func (p *User) Order() {
 		Complete <- errors.New(fmt.Sprintf("%s\t%s\t%s", err, p.Username, p.Password))
 	}
 
+	log.Println(fmt.Sprintf("[%s]登陆成功, 开始订餐～", p.Username))
+
 	tabs, err := p.client.ListTab()
 
 	if err != nil {
-		Complete <-  err
+		Complete <- err
 		return
 	}
 
@@ -42,26 +44,26 @@ func (p *User) Order() {
 	}
 
 	if tab == nil {
-		Complete <-  errors.New("No tab available")
+		Complete <- errors.New(fmt.Sprintf("[%s]No tab available", p.Username))
 		return
 	}
 
 	restaurants, err := p.client.ListRestaurant(tab)
 
 	if err != nil {
-		Complete <-  err
+		Complete <- err
 		return
 	}
 
 	if restaurants == nil {
-		Complete <-  errors.New("No Restaurant")
+		Complete <- errors.New(fmt.Sprintf("[%s]No Restaurant", p.Username))
 		return
 	}
 
 	//log.Println(len(restaurants), restaurants)
 
 	var dishes []model.Dish
-	for _, v := range restaurants  {
+	for _, v := range restaurants {
 		d, _ := p.client.ListDishes(tab, &v)
 		dishes = append(dishes, d...)
 	}
@@ -69,14 +71,14 @@ func (p *User) Order() {
 	//log.Println(len(dishes), dishes)
 
 	if len(dishes) <= 0 {
-		Complete <-  errors.New("No dish offered")
+		Complete <- errors.New(fmt.Sprintf("[%s]No dish offered", p.Username))
 		return
 	}
 
 	var targetDishes []model.Dish
 	for _, v := range dishes {
 		tag := true
-		for _, exclusive := range p.Exclusive  {
+		for _, exclusive := range p.Exclusive {
 			if strings.Contains(v.Name, exclusive) {
 				tag = false
 			}
@@ -87,14 +89,14 @@ func (p *User) Order() {
 	}
 
 	if len(targetDishes) <= 0 {
-		Complete <-  errors.New("No target dish found, every dish is being excluded")
+		Complete <- errors.New(fmt.Sprintf("[%s]No target dish found, every dish is being excluded", p.Username))
 		return
 	}
 
 	var targetDish *model.Dish
-	for _, v := range targetDishes{
+	for _, v := range targetDishes {
 		if targetDish != nil {
-			break;
+			break
 		}
 		for _, favorite := range p.Favorite {
 			if strings.Contains(v.Name, favorite) {
@@ -113,7 +115,7 @@ func (p *User) Order() {
 		targetDish = &targetDishes[idx]
 	}
 
-	log.Println("will order: ", targetDish.Name)
+	log.Println(fmt.Sprintf("[%s]will order: [%s]", p.Username, targetDish.Name))
 
 	res, _ := p.client.Order(tab, targetDish)
 

@@ -133,14 +133,7 @@ func (p *MeiCanClient) Login(username string, password string) error {
 
 	_, e := p.post(endpoint, "application/x-www-form-urlencoded", content.Encode())
 
-	if e == nil {
-		log.Println("登陆成功")
-	} else {
-
-		return e
-	}
-
-	return nil
+	return e
 }
 
 func (p *MeiCanClient) ListTab() ([]model.Tab, error) {
