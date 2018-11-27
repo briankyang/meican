@@ -8,13 +8,19 @@ import (
 	"meican/util"
 )
 
+var userConfigPath string
+
+func init() {
+	flag.StringVar(&userConfigPath, "config", config.UserConfigPath, "user configuration path, ex: /Users/root/user.json")
+}
+
 func main() {
+
+	flag.Parse()
 
 	var users []service.User
 
-	userConfigPath := flag.String("config", config.UserConfigPath, "user configuration path, ex: /Users/root/user.json")
-
-	util.ReadFromJsonFile(*userConfigPath, &users)
+	util.ReadFromJsonFile(userConfigPath, &users)
 
 	for _, u := range users {
 		go u.Order()
