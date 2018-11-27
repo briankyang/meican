@@ -27,6 +27,7 @@ func (p *User) Order() {
 	if err := p.client.Login(p.Username, p.Password); err != nil {
 
 		Complete <- errors.New(fmt.Sprintf("%s\t%s\t%s", err, p.Username, p.Password))
+		return
 	}
 
 	log.Println(fmt.Sprintf("[%s]登陆成功, 开始订餐～", p.Username))
