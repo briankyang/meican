@@ -95,14 +95,14 @@ func (p *User) Order() {
 	}
 
 	var targetDish *model.Dish
-	for _, v := range targetDishes {
+	for idx, _ := range targetDishes {
 		if targetDish != nil {
 			break
 		}
 		for _, favorite := range p.Favorite {
-			if strings.Contains(v.Name, favorite) {
-				log.Println("Find one favorite", v)
-				targetDish = &v
+			if strings.Contains(targetDishes[idx].Name, favorite) {
+				log.Println("Find one favorite", targetDishes[idx])
+				targetDish = &targetDishes[idx]
 				break
 			}
 		}

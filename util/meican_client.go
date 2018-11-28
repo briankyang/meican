@@ -178,7 +178,7 @@ func (p *MeiCanClient) ListRestaurant(t *model.Tab) ([]model.Restaurant, error) 
 
 	endpoint := p.config.BaseUrl + p.config.RestaurantPath + "?" + content.Encode()
 
-	log.Println(endpoint)
+	//log.Println(endpoint)
 
 	r, e := p.get(endpoint)
 
