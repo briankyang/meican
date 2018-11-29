@@ -22,8 +22,8 @@ func main() {
 
 	util.ReadFromJsonFile(userConfigPath, &users)
 
-	for _, u := range users {
-		go u.Order()
+	for idx, _ := range users {
+		go users[idx].Order()
 	}
 
 	for _ = range users {
