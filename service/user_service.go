@@ -87,26 +87,26 @@ func (p *User) Order() (string, error) {
 		return "", errors.New(fmt.Sprintf("[%s]No target dish found, every dish is being excluded", p.Username))
 	}
 
-	var targetDish *model.Dish
-	for idx, _ := range targetDishes {
-		if targetDish != nil {
-			break
-		}
+	var favoriteDishes []model.Dish
+	for idx, v := range targetDishes {
 		for _, favorite := range p.Favorite {
 			if strings.Contains(targetDishes[idx].Name, favorite) {
-				log.Println("Find one favorite", targetDishes[idx])
-				targetDish = &targetDishes[idx]
-				break
+				favoriteDishes = append(favoriteDishes, v)
 			}
 		}
 	}
 
-	//log.Println(len(targetDishes), targetDishes)
+	rand.Seed(time.Now().Unix())
 
-	if targetDish == nil {
-		rand.Seed(time.Now().Unix())
+	var targetDish *model.Dish
+	if len(favoriteDishes) == 0 {
 		idx := rand.Intn(len(targetDishes))
 		targetDish = &targetDishes[idx]
+		log.Println("choose dish by random", targetDish)
+	} else {
+		idx := rand.Intn(len(favoriteDishes))
+		targetDish = &favoriteDishes[idx]
+		log.Println("choose favorite dish by random", targetDish)
 	}
 
 	log.Println(fmt.Sprintf("[%s]will order: [%s]", p.Username, targetDish.Name))
