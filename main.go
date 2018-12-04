@@ -23,10 +23,8 @@ func main() {
 	util.ReadFromJsonFile(userConfigPath, &users)
 
 	for idx, _ := range users {
-		go users[idx].Order()
+		res, err := users[idx].Order()
+		log.Println(res, err)
 	}
 
-	for _ = range users {
-		log.Println("complete with message: ", <-service.Complete)
-	}
 }

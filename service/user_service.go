@@ -22,12 +22,11 @@ type User struct {
 	client util.MeiCanClient
 }
 
-func (p *User) Order() {
+func (p *User) Order() (string, error) {
 
 	if err := p.client.Login(p.Username, p.Password); err != nil {
 
-		Complete <- errors.New(fmt.Sprintf("%s\t%s\t%s", err, p.Username, p.Password))
-		return
+		return "", errors.New(fmt.Sprintf("%s\t%s\t%s", err, p.Username, p.Password))
 	}
 
 	log.Println(fmt.Sprintf("[%s]登陆成功, 开始订餐～", p.Username))
@@ -35,8 +34,7 @@ func (p *User) Order() {
 	tabs, err := p.client.ListTab()
 
 	if err != nil {
-		Complete <- err
-		return
+		return "", err
 	}
 
 	var tab *model.Tab
@@ -45,20 +43,17 @@ func (p *User) Order() {
 	}
 
 	if tab == nil {
-		Complete <- errors.New(fmt.Sprintf("[%s]No tab available", p.Username))
-		return
+		return "", errors.New(fmt.Sprintf("[%s]No tab available", p.Username))
 	}
 
 	restaurants, err := p.client.ListRestaurant(tab)
 
 	if err != nil {
-		Complete <- err
-		return
+		return "", err
 	}
 
 	if restaurants == nil {
-		Complete <- errors.New(fmt.Sprintf("[%s]No Restaurant", p.Username))
-		return
+		return "", errors.New(fmt.Sprintf("[%s]No Restaurant", p.Username))
 	}
 
 	//log.Println(len(restaurants), restaurants)
@@ -72,8 +67,7 @@ func (p *User) Order() {
 	//log.Println(len(dishes), dishes)
 
 	if len(dishes) <= 0 {
-		Complete <- errors.New(fmt.Sprintf("[%s]No dish offered", p.Username))
-		return
+		return "", errors.New(fmt.Sprintf("[%s]No dish offered", p.Username))
 	}
 
 	var targetDishes []model.Dish
@@ -90,8 +84,7 @@ func (p *User) Order() {
 	}
 
 	if len(targetDishes) <= 0 {
-		Complete <- errors.New(fmt.Sprintf("[%s]No target dish found, every dish is being excluded", p.Username))
-		return
+		return "", errors.New(fmt.Sprintf("[%s]No target dish found, every dish is being excluded", p.Username))
 	}
 
 	var targetDish *model.Dish
@@ -120,5 +113,5 @@ func (p *User) Order() {
 
 	res, _ := p.client.Order(tab, targetDish)
 
-	Complete <- res
+	return res, nil
 }
