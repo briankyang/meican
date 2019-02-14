@@ -22,6 +22,10 @@ type User struct {
 	client util.MeiCanClient
 }
 
+func init() {
+	rand.Seed(time.Now().Unix())
+}
+
 func (p *User) Order() (string, error) {
 
 	if err := p.client.Login(p.Username, p.Password); err != nil {
@@ -95,8 +99,6 @@ func (p *User) Order() (string, error) {
 			}
 		}
 	}
-
-	rand.Seed(time.Now().Unix())
 
 	var targetDish *model.Dish
 	if len(favoriteDishes) == 0 {
